@@ -1,0 +1,26 @@
+#!/usr/bin/env sh
+
+# Follow however many symlinks are needed to get the true directory and name of this script
+SOURCE=${BASH_SOURCE[0]}
+while [ -L "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+    DIR=$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )
+    SOURCE=$(readlink "$SOURCE")
+    [[ $SOURCE != /* ]] && SOURCE=$DIR/$SOURCE # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+SCRIPT_DIR=$( cd -P "$( dirname "$SOURCE" )/../" >/dev/null 2>&1 && pwd )
+SCRIPT_NAME="$( basename "$SCRIPT_DIR" )"
+
+function main {
+    # --- Command ---
+    local cmd="python -m ${SCRIPT_NAME}"
+
+    # --- Sync ---
+    echo "Running: 'uv sync'"
+    uv sync
+
+    # --- Run ---
+    echo "Running: 'uv run ${cmd} ${@}'"
+    uv run ${cmd} ${@}
+}
+
+main $@
